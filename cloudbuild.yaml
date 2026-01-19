@@ -3,15 +3,44 @@ steps:
   - name: 'gcr.io/cloud-builders/git'
     args: ['clone', 'https://github.com/skillmatrix24/web2native-android-temp.git']
 
-  # 2️⃣ Build using project Gradle Wrapper (IMPORTANT)
+  # 2️⃣ Install Android SDK
   - name: 'eclipse-temurin:17'
-    dir: 'web2native-android-temp'
-    entrypoint: 'bash'
+    entrypoint: bash
     args:
-      - '-c'
+      - -c
       - |
-        chmod +x ./gradlew
-        ./gradlew assembleRelease
+        set -e
+        apt-get update
+        apt-get install -y wget unzip
+
+        mkdir -p /sdk
+        cd /sdk
+
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+        unzip tools.zip
+        mkdir -p cmdline-tools/latest
+        mv cmdline-tools/* cmdline-tools/latest/
+
+        export ANDROID_HOME=/sdk
+        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
+        yes | sdkmanager --licenses
+        sdkmanager \
+          "platform-tools" \
+          "platforms;android-36" \
+          "build-tools;36.0.0"
+
+  # 3️⃣ Build APK
+  - name: 'eclipse-temurin:17'
+    entrypoint: bash
+    dir: 'web2native-android-temp'
+    args:
+      - -c
+      - |
+        export ANDROID_HOME=/sdk
+        export PATH=$ANDROID_HOME/platform-tools:$PATH
+        chmod +x gradlew
+        ./gradlew clean assembleRelease
 
 artifacts:
   objects:
@@ -19,7 +48,4 @@ artifacts:
     paths:
       - 'web2native-android-temp/app/build/outputs/apk/release/app-release-unsigned.apk'
 
-options:
-  logging: CLOUD_LOGGING_ONLY
-
-timeout: '1800s'
+timeout: 3600s
