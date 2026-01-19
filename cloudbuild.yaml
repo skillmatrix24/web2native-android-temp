@@ -1,13 +1,25 @@
 steps:
+  # 1️⃣ Clone repo
   - name: 'gcr.io/cloud-builders/git'
     args: ['clone', 'https://github.com/skillmatrix24/web2native-android-temp.git']
 
-  - name: 'gcr.io/cloud-builders/gradle'
-    dir: 'web2native-android-template'
-    args: ['assembleRelease']
+  # 2️⃣ Build using project Gradle Wrapper (IMPORTANT)
+  - name: 'eclipse-temurin:17'
+    dir: 'web2native-android-temp'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        chmod +x ./gradlew
+        ./gradlew assembleRelease
 
 artifacts:
   objects:
     location: 'gs://studio-7777713866-cb01e.firebasestorage.app/apks/'
     paths:
-      - 'web2native-android-template/app/build/outputs/apk/release/app-release-unsigned.apk'
+      - 'web2native-android-temp/app/build/outputs/apk/release/app-release-unsigned.apk'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'
