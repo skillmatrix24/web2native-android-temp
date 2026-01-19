@@ -6,6 +6,9 @@ steps:
   # 2️⃣ Install Android SDK
   - name: 'eclipse-temurin:17'
     entrypoint: bash
+    env:
+      - ANDROID_HOME=/sdk
+      - PATH=/sdk/cmdline-tools/latest/bin:/sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     args:
       - -c
       - |
@@ -21,9 +24,6 @@ steps:
         mkdir -p cmdline-tools/latest
         mv cmdline-tools/* cmdline-tools/latest/
 
-        export ANDROID_HOME=/sdk
-        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
         yes | sdkmanager --licenses
         sdkmanager \
           "platform-tools" \
@@ -34,11 +34,12 @@ steps:
   - name: 'eclipse-temurin:17'
     entrypoint: bash
     dir: 'web2native-android-temp'
+    env:
+      - ANDROID_HOME=/sdk
+      - PATH=/sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     args:
       - -c
       - |
-        export ANDROID_HOME=/sdk
-        export PATH=$ANDROID_HOME/platform-tools:$PATH
         chmod +x gradlew
         ./gradlew clean assembleRelease
 
