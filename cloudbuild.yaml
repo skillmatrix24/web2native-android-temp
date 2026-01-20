@@ -14,7 +14,6 @@ steps:
       - |
         set -e
 
-        echo "📦 Installing Android SDK"
         mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
 
         curl -s https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o tools.zip
@@ -30,8 +29,6 @@ steps:
           "build-tools;36.0.0"
 
         chmod +x ./gradlew
-
-        echo "🚀 Building APK"
         ./gradlew clean assembleRelease
 
 artifacts:
