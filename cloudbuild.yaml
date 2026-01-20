@@ -22,7 +22,7 @@ steps:
 
         echo "📂 Writing keystore file..."
         mkdir -p keystore
-        printf "%s" "$KEYSTORE_BASE64" | base64 -d > keystore/web2native-release.jks
+        printf "%s" "$$KEYSTORE_BASE64" | base64 -d > keystore/web2native-release.jks
 
         echo "🔐 Creating keystore.properties" 
         cat > keystore.properties <<EOF
@@ -31,7 +31,7 @@ steps:
         keyAlias=$$KEY_ALIAS
         keyPassword=$$KEY_PASSWORD
         EOF
-
+        
         echo "🚀 Building RELEASE APK..."
         ./gradlew clean assembleRelease
 
