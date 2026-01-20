@@ -4,20 +4,17 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # --------------------------------------------------
-  # 1️⃣ Build APK using Gradle + SDK install
-  # --------------------------------------------------
   - name: "gcr.io/cloud-builders/gradle"
     entrypoint: bash
     env:
+      - ANDROID_SDK_ROOT=/workspace/android-sdk
       - GRADLE_USER_HOME=/workspace/.gradle
     args:
       - -c
       - |
         set -e
 
-        echo "📦 Installing Android SDK..."
-        export ANDROID_SDK_ROOT=/workspace/android-sdk
+        echo "📦 Installing Android SDK"
         mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
 
         curl -s https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o tools.zip
@@ -27,16 +24,16 @@ steps:
         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
 
         yes | sdkmanager --licenses
-        sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+        sdkmanager \
+          "platform-tools" \
+          "platforms;android-36" \
+          "build-tools;36.0.0"
 
         chmod +x ./gradlew
 
-        echo "🚀 Building APK..."
+        echo "🚀 Building APK"
         ./gradlew clean assembleRelease
 
-# --------------------------------------------------
-# 2️⃣ Upload APK
-# --------------------------------------------------
 artifacts:
   objects:
     location: "gs://studio-7777713866-cb01e.firebasestorage.app/apks/"
