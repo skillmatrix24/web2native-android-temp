@@ -4,71 +4,34 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # -------------------------------------------------------
-  # 1️⃣ Clone Android project from GitHub
-  # -------------------------------------------------------
+  # --------------------------------------------------
+  # 1️⃣ Clone repo
+  # --------------------------------------------------
   - name: "gcr.io/cloud-builders/git"
     args:
       - clone
       - https://github.com/skillmatrix24/web2native-android-temp.git
-      - web2native-android
+      - app
 
-  # -------------------------------------------------------
-  # 2️⃣ Install Android SDK (FIXED cmdline-tools layout)
-  # -------------------------------------------------------
-  - name: "eclipse-temurin:17"
-    entrypoint: bash
+  # --------------------------------------------------
+  # 2️⃣ Build APK (Android SDK already present)
+  # --------------------------------------------------
+  - name: "gcr.io/android-build-tools/android-30"
+    dir: "app"
     env:
-      - ANDROID_HOME=/sdk
-      - ANDROID_SDK_ROOT=/sdk
-      - PATH=/sdk/cmdline-tools/latest/bin:/sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - GRADLE_USER_HOME=/workspace/.gradle
     args:
-      - -c
-      - |
-        set -euxo pipefail
-
-        apt-get update
-        apt-get install -y wget unzip
-
-        mkdir -p /sdk/cmdline-tools
-        cd /sdk/cmdline-tools
-
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-        unzip tools.zip
-
-        # 🔥 CRITICAL FIX (no self-move)
-        rm -rf latest
-        mv cmdline-tools latest
-        rm tools.zip
-
-        yes | sdkmanager --licenses
-
-        sdkmanager \
-          "platform-tools" \
-          "platforms;android-36" \
-          "build-tools;36.0.0"
-
-  # -------------------------------------------------------
-  # 3️⃣ Build APK (Gradle Wrapper)
-  # -------------------------------------------------------
-  - name: "eclipse-temurin:17"
-    dir: "web2native-android"
-    entrypoint: bash
-    env:
-      - ANDROID_HOME=/sdk
-      - ANDROID_SDK_ROOT=/sdk
-      - PATH=/sdk/cmdline-tools/latest/bin:/sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    args:
+      - bash
       - -c
       - |
         chmod +x ./gradlew
         ./gradlew clean assembleRelease
 
-# -------------------------------------------------------
-# 4️⃣ Upload APK to Cloud Storage
-# -------------------------------------------------------
+# --------------------------------------------------
+# 3️⃣ Upload APK
+# --------------------------------------------------
 artifacts:
   objects:
     location: "gs://studio-7777713866-cb01e.firebasestorage.app/apks/"
     paths:
-      - "web2native-android/app/build/outputs/apk/release/*.apk"
+      - "app/app/build/outputs/apk/release/*.apk"
