@@ -14,13 +14,13 @@ steps:
       - |
         set -e
 
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        mkdir -p $$ANDROID_SDK_ROOT/cmdline-tools
 
         curl -s https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o tools.zip
-        unzip -q tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
-        mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+        unzip -q tools.zip -d $$ANDROID_SDK_ROOT/cmdline-tools
+        mv $$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $$ANDROID_SDK_ROOT/cmdline-tools/latest
 
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
+        export PATH=$$PATH:$$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$$ANDROID_SDK_ROOT/platform-tools
 
         yes | sdkmanager --licenses
         sdkmanager \
