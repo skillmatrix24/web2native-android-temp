@@ -4,29 +4,12 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  - name: "gcr.io/cloud-builders/gradle"
+  - name: "gcr.io/android-build-tools/android-36"
     entrypoint: bash
-    env:
-      - ANDROID_SDK_ROOT=/workspace/android-sdk
-      - GRADLE_USER_HOME=/workspace/.gradle
     args:
       - -c
       - |
         set -e
-
-        mkdir -p $$ANDROID_SDK_ROOT/cmdline-tools
-
-        curl -s https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o tools.zip
-        unzip -q tools.zip -d $$ANDROID_SDK_ROOT/cmdline-tools
-        mv $$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $$ANDROID_SDK_ROOT/cmdline-tools/latest
-
-        export PATH=$$PATH:$$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$$ANDROID_SDK_ROOT/platform-tools
-
-        yes | sdkmanager --licenses
-        sdkmanager \
-          "platform-tools" \
-          "platforms;android-36" \
-          "build-tools;36.0.0"
 
         chmod +x ./gradlew
         ./gradlew clean assembleRelease
