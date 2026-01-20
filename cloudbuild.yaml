@@ -4,8 +4,8 @@ steps:
     args:
       ['clone', 'https://github.com/skillmatrix24/web2native-android-temp.git']
 
-  # 2️⃣ Build APK using Android SDK image
-  - name: 'gcr.io/cloud-builders/android'
+  # 2️⃣ Build APK (REAL Android SDK)
+  - name: 'ghcr.io/cirruslabs/android-sdk:34'
     dir: 'web2native-android-temp'
     entrypoint: 'bash'
     args:
