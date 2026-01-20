@@ -1,9 +1,11 @@
 steps:
+  # 1️⃣ Clone Android project
   - name: gcr.io/cloud-builders/git
     args:
       - clone
       - https://github.com/skillmatrix24/web2native-android-temp.git
 
+  # 2️⃣ Build SIGNED APK + AAB
   - name: ghcr.io/cirruslabs/android-sdk:36
     dir: web2native-android-temp
     entrypoint: bash
@@ -18,11 +20,11 @@ steps:
         set -e
         chmod +x ./gradlew
 
-        echo "📂 Writing keystore..."
+        echo "📂 Writing keystore file..."
         mkdir -p app/keystore
         echo "$KEYSTORE_BASE64" | base64 -d > app/keystore/web2native-release.jks
 
-        echo "🔐 Writing keystore.properties"
+        echo "🔐 Creating keystore.properties"
         cat <<EOF > keystore.properties
 storeFile=app/keystore/web2native-release.jks
 storePassword=$KEYSTORE_PASSWORD
@@ -30,7 +32,10 @@ keyAlias=$KEY_ALIAS
 keyPassword=$KEY_PASSWORD
 EOF
 
+        echo "🚀 Building RELEASE APK..."
         ./gradlew clean assembleRelease
+
+        echo "🚀 Building RELEASE AAB..."
         ./gradlew bundleRelease
 
 availableSecrets:
