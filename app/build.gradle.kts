@@ -7,17 +7,18 @@ plugins {
 }
 
 /* =================================================
-   🔐 LOAD KEYSTORE PROPERTIES (ROOT/keystore/)
-   Folder structure:
-   Web2NativeAndroid/
-   └── keystore/
-       ├── keystore.properties
-       └── web2native-release.jks
+   🔐 KEYSTORE LOADING STRATEGY (SMART)
+   Priority:
+   1️⃣ ENV variables (Cloud Build / CI)
+   2️⃣ keystore/keystore.properties (Local build)
 ================================================== */
+
 val keystoreProps = Properties()
 val keystorePropsFile = rootProject.file("keystore/keystore.properties")
 
-if (keystorePropsFile.exists()) {
+val isCI = System.getenv("ANDROID_KEYSTORE_FILE") != null
+
+if (!isCI && keystorePropsFile.exists()) {
     keystoreProps.load(FileInputStream(keystorePropsFile))
 }
 
@@ -36,26 +37,46 @@ android {
     }
 
     /* =================================================
-       🔐 SIGNING CONFIG (FIXED & CLOUD-SAFE)
-       ✔ rootProject.file() used
-       ✔ No hardcoded secrets
-       ✔ Works in local + Cloud Build
+       🔐 SIGNING CONFIG (LOCAL + CLOUD SAFE)
     ================================================== */
     signingConfigs {
-    create("release") {
-        storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
-        storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-        keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-        keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
-    }
-}
 
-buildTypes {
-    release {
-        signingConfig = signingConfigs.getByName("release")
-        isMinifyEnabled = false
+        create("release") {
+
+            if (isCI) {
+                // ☁️ Cloud Build / CI
+                storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+
+            } else if (keystoreProps.isNotEmpty()) {
+                // 💻 Local build
+                storeFile = rootProject.file(
+                    "keystore/${keystoreProps["storeFile"]}"
+                )
+                storePassword = keystoreProps["storePassword"] as String
+                keyAlias = keystoreProps["keyAlias"] as String
+                keyPassword = keystoreProps["keyPassword"] as String
+            }
+        }
     }
-}
+
+    buildTypes {
+
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+
+        debug {
+            // default debug keystore
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
