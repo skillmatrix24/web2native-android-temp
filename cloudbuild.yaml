@@ -1,8 +1,3 @@
-# 🔁 Substitutions (Firebase se override honge)
-substitutions:
-  _USER_ID: 'unknown-user'
-  _APP_ID: 'unknown-app'
-
 steps:
   # 1️⃣ Clone Android project
   - name: 'gcr.io/cloud-builders/git'
@@ -59,7 +54,7 @@ availableSecrets:
 # 📦 Upload artifacts
 artifacts:
   objects:
-    location: 'gs://studio-7777713866-cb01e.firebasestorage.app/apks/${_USER_ID}/${_APP_ID}/'
+    location: 'gs://studio-7777713866-cb01e.firebasestorage.app/apks/'
     paths:
       - 'web2native-android-temp/app/build/outputs/apk/release/app-release.apk'
       - 'web2native-android-temp/app/build/outputs/bundle/release/app-release.aab'
