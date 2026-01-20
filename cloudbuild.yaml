@@ -5,21 +5,37 @@ options:
 
 steps:
   # --------------------------------------------------
-  # 1️⃣ Build APK directly from uploaded source
+  # 1️⃣ Build APK using Gradle + SDK install
   # --------------------------------------------------
-  - name: "gcr.io/android-build-tools/android-30"
-    dir: "."
+  - name: "gcr.io/cloud-builders/gradle"
+    entrypoint: bash
     env:
       - GRADLE_USER_HOME=/workspace/.gradle
     args:
-      - bash
       - -c
       - |
+        set -e
+
+        echo "📦 Installing Android SDK..."
+        export ANDROID_SDK_ROOT=/workspace/android-sdk
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+
+        curl -s https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o tools.zip
+        unzip -q tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+        mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
+
+        yes | sdkmanager --licenses
+        sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
         chmod +x ./gradlew
+
+        echo "🚀 Building APK..."
         ./gradlew clean assembleRelease
 
 # --------------------------------------------------
-# 2️⃣ Upload APK to Firebase Storage bucket
+# 2️⃣ Upload APK
 # --------------------------------------------------
 artifacts:
   objects:
