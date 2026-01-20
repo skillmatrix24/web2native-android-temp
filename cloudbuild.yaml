@@ -3,32 +3,38 @@ steps:
   - name: 'gcr.io/cloud-builders/git'
     args: ['clone', 'https://github.com/skillmatrix24/web2native-android-temp.git']
 
-  # 2️⃣ Install Android SDK
-  - name: 'eclipse-temurin:17'
-    entrypoint: bash
-    env:
-      - ANDROID_HOME=/sdk
-      - PATH=/sdk/cmdline-tools/latest/bin:/sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    args:
-      - -c
-      - |
-        set -e
-        apt-get update
-        apt-get install -y wget unzip
+  # 2️⃣ Install Android SDK (FINAL FIX)
+- name: 'eclipse-temurin:17'
+  entrypoint: bash
+  env:
+    - ANDROID_HOME=/sdk
+    - ANDROID_SDK_ROOT=/sdk
+    - PATH=/sdk/cmdline-tools/latest/bin:/sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  args:
+    - -c
+    - |
+      set -euxo pipefail
 
-        mkdir -p /sdk
-        cd /sdk
+      apt-get update
+      apt-get install -y wget unzip
 
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-        unzip tools.zip
-        mkdir -p cmdline-tools/latest
-        mv cmdline-tools/* cmdline-tools/latest/
+      mkdir -p /sdk/cmdline-tools
+      cd /sdk/cmdline-tools
 
-        yes | sdkmanager --licenses
-        sdkmanager \
-          "platform-tools" \
-          "platforms;android-36" \
-          "build-tools;36.0.0"
+      wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+      unzip tools.zip
+
+      # 🔥 IMPORTANT FIX: rename extracted folder safely
+      rm -rf latest
+      mv cmdline-tools latest
+      rm tools.zip
+
+      yes | sdkmanager --licenses
+
+      sdkmanager \
+        "platform-tools" \
+        "platforms;android-36" \
+        "build-tools;36.0.0"
 
   # 3️⃣ Build APK
   - name: 'eclipse-temurin:17'
