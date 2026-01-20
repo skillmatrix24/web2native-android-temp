@@ -1,10 +1,11 @@
 steps:
   # 1️⃣ Clone repo
   - name: 'gcr.io/cloud-builders/git'
-    args: ['clone', 'https://github.com/skillmatrix24/web2native-android-temp.git']
+    args:
+      ['clone', 'https://github.com/skillmatrix24/web2native-android-temp.git']
 
-  # 2️⃣ Build using project Gradle Wrapper (IMPORTANT)
-  - name: 'eclipse-temurin:17'
+  # 2️⃣ Build APK using Android SDK image
+  - name: 'gcr.io/cloud-builders/android'
     dir: 'web2native-android-temp'
     entrypoint: 'bash'
     args:
