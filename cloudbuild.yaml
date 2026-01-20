@@ -1,24 +1,68 @@
+# 🔁 Substitutions (Firebase se override honge)
+substitutions:
+  _USER_ID: 'unknown-user'
+  _APP_ID: 'unknown-app'
+
 steps:
-  # 1️⃣ Clone repo
+  # 1️⃣ Clone Android project
   - name: 'gcr.io/cloud-builders/git'
     args:
       ['clone', 'https://github.com/skillmatrix24/web2native-android-temp.git']
 
-  # 2️⃣ Build APK (REAL Android SDK)
-  - name: 'ghcr.io/cirruslabs/android-sdk:34'
+  # 2️⃣ Build SIGNED APK + AAB (with secrets)
+  - name: 'ghcr.io/cirruslabs/android-sdk:36'
     dir: 'web2native-android-temp'
     entrypoint: 'bash'
+    secretEnv:
+      - KEYSTORE_FILE
+      - STORE_PASSWORD
+      - KEY_PASSWORD
+      - KEY_ALIAS
     args:
       - '-c'
       - |
+        set -e
         chmod +x ./gradlew
-        ./gradlew assembleRelease
 
+        echo "🔐 Preparing keystore..."
+        mkdir -p app/keystore
+        echo "$KEYSTORE_FILE" | base64 -d > app/keystore/release.jks
+
+        cat <<EOF > keystore.properties
+        storeFile=app/keystore/release.jks
+        storePassword=$STORE_PASSWORD
+        keyAlias=$KEY_ALIAS
+        keyPassword=$KEY_PASSWORD
+        EOF
+
+        echo "🚀 Building SIGNED APK..."
+        ./gradlew clean assembleRelease
+
+        echo "🚀 Building SIGNED AAB..."
+        ./gradlew bundleRelease
+
+        echo "📦 Outputs:"
+        ls -R app/build/outputs
+
+# 🔐 Secret Manager mapping
+availableSecrets:
+  secretManager:
+    - versionName: projects/$PROJECT_ID/secrets/web2native_keystore/versions/latest
+      env: KEYSTORE_FILE
+    - versionName: projects/$PROJECT_ID/secrets/web2native_store_password/versions/latest
+      env: STORE_PASSWORD
+    - versionName: projects/$PROJECT_ID/secrets/web2native_key_password/versions/latest
+      env: KEY_PASSWORD
+    - versionName: projects/$PROJECT_ID/secrets/web2native_key_alias/versions/latest
+      env: KEY_ALIAS
+
+# 📦 Upload artifacts
 artifacts:
   objects:
-    location: 'gs://studio-7777713866-cb01e.firebasestorage.app/apks/'
+    location: 'gs://studio-7777713866-cb01e.firebasestorage.app/apks/${_USER_ID}/${_APP_ID}/'
     paths:
-      - 'web2native-android-temp/app/build/outputs/apk/release/app-release-unsigned.apk'
+      - 'web2native-android-temp/app/build/outputs/apk/release/app-release.apk'
+      - 'web2native-android-temp/app/build/outputs/bundle/release/app-release.aab'
 
 options:
   logging: CLOUD_LOGGING_ONLY
