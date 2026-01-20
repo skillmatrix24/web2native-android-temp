@@ -18,23 +18,15 @@ steps:
       set -e
       chmod +x ./gradlew
 
-      echo "📂 Writing keystore file..."
       mkdir -p app/keystore
-      echo "$KEYSTORE_BASE64" | base64 -d > app/keystore/web2native-release.jks
+      printf "%s" "$KEYSTORE_BASE64" | base64 -d > app/keystore/release.jks
 
-        echo "🔐 Creating keystore.properties"
-        cat > keystore.properties <<EOF
-        storeFile=app/keystore/web2native-release.jks
-        storePassword=$$KEYSTORE_PASSWORD
-        keyAlias=$$KEY_ALIAS
-        keyPassword=$$KEY_PASSWORD
-        EOF
+      export ANDROID_KEYSTORE_FILE=app/keystore/release.jks
+      export ANDROID_KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD"
+      export ANDROID_KEY_ALIAS="$KEY_ALIAS"
+      export ANDROID_KEY_PASSWORD="$KEY_PASSWORD"
 
-      echo "🚀 Building RELEASE APK..."
-      ./gradlew clean assembleRelease
-
-      echo "🚀 Building RELEASE AAB..."
-      ./gradlew bundleRelease
+      ./gradlew clean assembleRelease bundleRelease
 
 availableSecrets:
   secretManager:
