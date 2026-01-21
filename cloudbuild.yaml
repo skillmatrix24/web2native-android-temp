@@ -20,18 +20,10 @@ steps:
         set -e
         chmod +x ./gradlew
 
-        echo "📂 Writing keystore file..."
+        echo "📂 Writing keystore file (CI)..."
         mkdir -p keystore
         printf "%s" "$$KEYSTORE_BASE64" | base64 -d > keystore/web2native-release.jks
 
-        echo "🔐 Creating keystore.properties" 
-        cat > keystore.properties <<EOF
-        storeFile=app/keystore/web2native-release.jks
-        storePassword=$$KEYSTORE_PASSWORD
-        keyAlias=$$KEY_ALIAS
-        keyPassword=$$KEY_PASSWORD
-        EOF
-        
         echo "🚀 Building RELEASE APK..."
         ./gradlew clean assembleRelease
 

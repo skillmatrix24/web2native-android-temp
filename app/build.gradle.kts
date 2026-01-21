@@ -6,22 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
-/* =================================================
-   🔐 KEYSTORE LOADING STRATEGY (SMART)
-   Priority:
-   1️⃣ ENV variables (Cloud Build / CI)
-   2️⃣ keystore/keystore.properties (Local build)
-================================================== */
-
-val keystoreProps = Properties()
-val keystorePropsFile = rootProject.file("keystore/keystore.properties")
-
-val isCI = System.getenv("ANDROID_KEYSTORE_FILE") != null
-
-if (!isCI && keystorePropsFile.exists()) {
-    keystoreProps.load(FileInputStream(keystorePropsFile))
-}
-
 android {
 
     namespace = "com.web2native.template"
@@ -37,33 +21,42 @@ android {
     }
 
     /* =================================================
-       🔐 SIGNING CONFIG (LOCAL + CLOUD SAFE)
+       🔐 SIGNING CONFIG (BULLETPROOF)
+       - storeFile ALWAYS set
+       - Secrets only for passwords
     ================================================== */
     signingConfigs {
 
         create("release") {
 
-            if (isCI) {
-                // ☁️ Cloud Build / CI
-                storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
-                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            // ✅ ALWAYS SET (CI + Local both)
+            storeFile = rootProject.file("keystore/web2native-release.jks")
 
-            } else if (keystoreProps.isNotEmpty()) {
-                // 💻 Local build
-                storeFile = rootProject.file(
-                    "keystore/${keystoreProps["storeFile"]}"
-                )
-                storePassword = keystoreProps["storePassword"] as String
-                keyAlias = keystoreProps["keyAlias"] as String
-                keyPassword = keystoreProps["keyPassword"] as String
+            // 🔐 Passwords / alias
+            val storePwd = System.getenv("KEYSTORE_PASSWORD")
+            val alias = System.getenv("KEY_ALIAS")
+            val keyPwd = System.getenv("KEY_PASSWORD")
+
+            if (storePwd != null && alias != null && keyPwd != null) {
+                // ☁️ Cloud Build
+                storePassword = storePwd
+                keyAlias = alias
+                keyPassword = keyPwd
+            } else {
+                // 💻 Local fallback
+                val propsFile = rootProject.file("keystore/keystore.properties")
+                if (propsFile.exists()) {
+                    val props = Properties()
+                    props.load(FileInputStream(propsFile))
+                    storePassword = props["storePassword"] as String
+                    keyAlias = props["keyAlias"] as String
+                    keyPassword = props["keyPassword"] as String
+                }
             }
         }
     }
 
     buildTypes {
-
         release {
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("release")
@@ -72,7 +65,6 @@ android {
                 "proguard-rules.pro"
             )
         }
-
         debug {
             // default debug keystore
         }
@@ -89,7 +81,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
