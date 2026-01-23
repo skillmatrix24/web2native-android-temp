@@ -1,13 +1,6 @@
 steps:
-  # 1️⃣ Clone Android template
-  - name: gcr.io/cloud-builders/git
-    args:
-      - clone
-      - https://github.com/skillmatrix24/web2native-android-temp.git
-
-  # 2️⃣ Build signed APK + AAB
+  # 1️⃣ Build SIGNED APK + AAB
   - name: ghcr.io/cirruslabs/android-sdk:36
-    dir: web2native-android-temp
     entrypoint: bash
     secretEnv:
       - KEYSTORE_BASE64
@@ -24,10 +17,10 @@ steps:
         mkdir -p keystore
         printf "%s" "$$KEYSTORE_BASE64" | base64 -d > keystore/web2native-release.jks
 
-        echo "🚀 Building APK..."
+        echo "🚀 Building RELEASE APK..."
         ./gradlew clean assembleRelease
 
-        echo "🚀 Building AAB..."
+        echo "🚀 Building RELEASE AAB..."
         ./gradlew bundleRelease
 
 availableSecrets:
@@ -43,11 +36,12 @@ availableSecrets:
 
 artifacts:
   objects:
-    location: gs://studio-7777713866-cb01e_cloudbuild/apks/
+    location: gs://studio-7777713866-cb01e.firebasestorage.app/apks/
     paths:
-      - web2native-android-temp/app/build/outputs/apk/release/app-release.apk
-      - web2native-android-temp/app/build/outputs/bundle/release/app-release.aab
+      - app/build/outputs/apk/release/app-release.apk
+      - app/build/outputs/bundle/release/app-release.aab
 
-timeout: 1800s
 options:
   logging: CLOUD_LOGGING_ONLY
+
+timeout: 1800s
