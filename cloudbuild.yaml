@@ -20,7 +20,7 @@ steps:
         set -e
         chmod +x ./gradlew
 
-        echo "📂 Writing keystore..."
+        echo "📂 Writing keystore (CI)..."
         mkdir -p keystore
         printf "%s" "$$KEYSTORE_BASE64" | base64 -d > keystore/web2native-release.jks
 
@@ -48,7 +48,6 @@ artifacts:
       - web2native-android-temp/app/build/outputs/apk/release/app-release.apk
       - web2native-android-temp/app/build/outputs/bundle/release/app-release.aab
 
+timeout: 1800s
 options:
   logging: CLOUD_LOGGING_ONLY
-
-timeout: 1800s

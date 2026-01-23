@@ -1,15 +1,84 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ================================
+# 🔐 SECRETS (MANDATORY)
+# ================================
+keystore.properties
+*.keystore
+*.jks
+*.p12
+*.pem
+
+# ================================
+# 🧠 LOCAL CONFIG
+# ================================
 local.properties
+.env
+.env.*
+
+# ================================
+# 🏗️ GRADLE
+# ================================
+.gradle/
+build/
+**/build/
+
+# ================================
+# 🤖 ANDROID
+# ================================
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.log
+captures/
+
+# ================================
+# 🧪 IDE (Android Studio / IntelliJ)
+# ================================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ================================
+# 🍎 macOS
+# ================================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ================================
+# 🪟 Windows
+# ================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ================================
+# ☁️ CLOUD / CI
+# ================================
+cloudbuild-local.yaml
+.firebase/
+firebase-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ================================
+# 🔄 TEMP / CACHE
+# ================================
+tmp/
+temp/
+.cache/
+
+# ================================
+# 🧰 NODE (if ever added)
+# ================================
+node_modules/
+
+# ================================
+# 🔒 SAFETY NET
+# ================================
+*.key
+*.crt
+*.csr
